@@ -16,6 +16,13 @@
 `index.html` — точка входа для `npm run dev`, он ссылается на `src/` и сам
 по себе покажет пустую страницу.
 
+## Ссылка в интернете
+
+https://sammymipt.github.io/interactive_demos/
+
+Страница пересобирается автоматически при каждом push в `main` —
+workflow `.github/workflows/pages.yml`. Отдельно ничего делать не нужно.
+
 ## Как выложить на Netlify
 
 Вариант 1, без сборки: перетащить папку `dist` на app.netlify.com/drop.
