@@ -9,13 +9,18 @@
 // в конце <body>: никакой загрузки по сети, никакого CORS, работает офлайн
 // в любом браузере. "use strict" сохраняет режим, который был у модуля.
 //
+// Тот же файл кладётся в docs/ — оттуда его публикует GitHub Pages
+// (Settings → Pages → Deploy from a branch, ветка main, папка /docs).
+//
 // Зависимостей нет: скрипт запускается голым node, без npm install.
 
-import { readFileSync, writeFileSync, existsSync } from 'node:fs'
+import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'node:fs'
 import { join, dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
-const dist = resolve(dirname(fileURLToPath(import.meta.url)), '..', 'dist')
+const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
+const dist = join(root, 'dist')
+const docs = join(root, 'docs')
 const htmlPath = join(dist, 'index.html')
 
 if (!existsSync(htmlPath)) {
@@ -68,5 +73,14 @@ html = html.replace(/([ \t]*)<\/body>/i, `${scripts}$1</body>`)
 
 writeFileSync(htmlPath, html)
 
+// Копия для GitHub Pages. Пустой .nojekyll выключает обработку Jekyll:
+// она сайту не нужна и только замедляет публикацию.
+mkdirSync(docs, { recursive: true })
+writeFileSync(join(docs, 'index.html'), html)
+writeFileSync(join(docs, '.nojekyll'), '')
+
 const kb = (n) => `${Math.round(n / 1024)} КБ`
-console.log(`inline: в dist/index.html встроено скриптов ${count}, стилей ${styles} — ${kb(Buffer.byteLength(html))}`)
+console.log(
+  `inline: встроено скриптов ${count}, стилей ${styles} — ${kb(Buffer.byteLength(html))}\n` +
+    'inline: записаны dist/index.html и docs/index.html',
+)

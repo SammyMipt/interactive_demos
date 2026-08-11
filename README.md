@@ -20,8 +20,19 @@
 
 https://sammymipt.github.io/interactive_demos/
 
-Страница пересобирается автоматически при каждом push в `main` —
-workflow `.github/workflows/pages.yml`. Отдельно ничего делать не нужно.
+Публикуется через GitHub Pages из папки `docs` ветки `main`
+(Settings → Pages → Deploy from a branch, ветка `main`, папка `/docs`).
+
+`docs/index.html` — это тот же самодостаточный файл, что и `dist/index.html`,
+его записывает `npm run build`. Поэтому после правок в `src/` порядок такой:
+
+```
+npm run build
+git add -A && git commit -m "..." && git push
+```
+
+Без `npm run build` сайт останется со старым содержимым: в `docs` лежит
+собранная страница, а не исходники.
 
 ## Как выложить на Netlify
 
