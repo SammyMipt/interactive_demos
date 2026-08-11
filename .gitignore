@@ -1,0 +1,12 @@
+node_modules/
+
+# Сборка: в репозиторий едет только самодостаточный dist/index.html,
+# его достаточно скачать и открыть двойным щелчком. Отдельные бандлы
+# в dist/assets после вклейки не нужны и пересоздаются при npm run build.
+dist/assets/
+
+.DS_Store
+Thumbs.db
+*.local
+.vscode/
+.idea/
