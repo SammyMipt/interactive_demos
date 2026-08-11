@@ -42,12 +42,18 @@ const read = (href) => {
 // Закрывающий тег внутри строки в бандле оборвал бы <script> раньше времени.
 const escape = (code) => code.replace(/<\/(script|style)/gi, '<\\/$1')
 
+// Что и в каком виде уехало в страницу — по этому списку в конце
+// проверяем, что ничего не исказилось.
+const inlined = []
+
 let styles = 0
 html = html.replace(
   /[ \t]*<link[^>]*rel="stylesheet"[^>]*href="([^"]+)"[^>]*>\n?/gi,
   (_, href) => {
     styles++
-    return `    <style>${escape(read(href))}</style>\n`
+    const code = escape(read(href))
+    inlined.push([href, code])
+    return `    <style>${code}</style>\n`
   },
 )
 
@@ -57,7 +63,9 @@ html = html.replace(
   /[ \t]*<script[^>]*\bsrc="([^"]+)"[^>]*><\/script>\n?/gi,
   (_, src) => {
     count++
-    scripts += `    <script>(function(){"use strict";\n${escape(read(src))}\n})();</script>\n`
+    const code = escape(read(src))
+    inlined.push([src, code])
+    scripts += `    <script>(function(){"use strict";\n${code}\n})();</script>\n`
     return ''
   },
 )
@@ -69,7 +77,22 @@ if (!count) {
 
 // Обычный скрипт не откладывается, как модуль, поэтому его место — в конце
 // <body>, когда <div id="root"> уже разобран парсером.
-html = html.replace(/([ \t]*)<\/body>/i, `${scripts}$1</body>`)
+//
+// Подставляем через функцию, а не через строку замены: в строке замены
+// $&, $1 и $$ имеют особый смысл и заменяются кусками совпадения. В
+// минифицированном бандле такие последовательности встречаются (у KaTeX
+// $ — разделитель формул), и код молча ломался.
+html = html.replace(/([ \t]*)<\/body>/i, (_, indent) => scripts + indent + '</body>')
+
+// Страховка: бандл должен лежать в странице слово в слово. Однажды он
+// молча испортился на подстановке ($& и $1 в строке замены), страница
+// осталась пустой, и заметно это стало только в браузере.
+for (const [src, code] of inlined) {
+  if (!html.includes(code)) {
+    console.error(`inline: ${src} попал в страницу искажённым — сборка остановлена`)
+    process.exit(1)
+  }
+}
 
 writeFileSync(htmlPath, html)
 

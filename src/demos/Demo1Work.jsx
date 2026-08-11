@@ -1,5 +1,5 @@
 import React, { useRef, useState } from 'react'
-import { Stage, Panel, Readout, Slider, num, G } from '../ui.jsx'
+import { Stage, Panel, Readout, Slider, Formula, num, G } from '../ui.jsx'
 
 /* Работа = сила x перемещение.
    Коробку тащит сам ученик мышкой. Ползунок задаёт массу.
@@ -290,7 +290,7 @@ export default function Demo1Work() {
       </div>
 
       <p className="note">
-        Трение покоя равно <b>0,4 · m · g</b>. При массе больше <b>150 кг</b> нужная сила
+        Трение покоя равно <Formula tex="0{,}4\,mg" />. При массе больше <b>150 кг</b> нужная сила
         превышает человеческий предел в 600 Н, и коробка остаётся на месте: сила есть,
         перемещения нет, работа нулевая. Это ровно случай со шкафом из задачи З2.
       </p>

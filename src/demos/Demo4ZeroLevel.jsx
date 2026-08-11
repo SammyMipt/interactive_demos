@@ -1,5 +1,5 @@
 import React, { useRef, useState } from 'react'
-import { Stage, Panel, Readout, Slider, num, G } from '../ui.jsx'
+import { Stage, Panel, Readout, Slider, SvgFormula, num, G } from '../ui.jsx'
 
 /* Потенциальная энергия считается относительно выбранного нулевого уровня.
    Пунктир перетаскивается мышкой, предмет при этом не меняется.        */
@@ -131,9 +131,7 @@ export default function Demo4ZeroLevel() {
 
           {/* формула */}
           <g transform="translate(636, 84)">
-            <text fontSize="12" fill="var(--ink-soft)" letterSpacing="1">
-              Ep = m · g · h
-            </text>
+            <SvgFormula tex="E_p = mgh" y={-16} width={120} height={30} size={14} fill="var(--ink-soft)" />
             <text y="42" fontSize="27" fontWeight="700" fontFamily="var(--mono)" fill={Ep < 0 ? 'var(--kinetic)' : 'var(--potential)'}>
               {num(Ep, 1)}
             </text>

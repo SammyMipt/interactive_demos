@@ -1,6 +1,60 @@
 import React, { useEffect, useRef } from 'react'
+import katex from 'katex'
 
 export const G = 10 // Н/кг, как договорились в методичках
+
+/* ---------- формулы ----------
+
+   Формулы пишутся на LaTeX, KaTeX переводит их в MathML, а рисует его
+   уже сам браузер своим математическим шрифтом. Поэтому шрифты KaTeX
+   встраивать в файл не нужно и он остаётся лёгким — это важно, ведь
+   всё приложение уезжает одним самодостаточным dist/index.html.
+
+   Единицы измерения держим снаружи формулы: в шрифтах KaTeX нет
+   кириллицы, и «Н» внутри \text{} осталось бы пустым местом.          */
+
+const mathCache = new Map()
+
+function toMathML(tex) {
+  let html = mathCache.get(tex)
+  if (html === undefined) {
+    html = katex.renderToString(tex, { output: 'mathml', throwOnError: false })
+    mathCache.set(tex, html)
+  }
+  return html
+}
+
+/* Число в формулу. У num() дробная часть отделена запятой, а LaTeX считает
+   запятую знаком препинания и ставит после неё пробел: 12{,}5 это чинит. */
+export function texNum(v, digits = 1) {
+  return num(v, digits).replace(',', '{,}')
+}
+
+/* Формула в обычном тексте. Единица измерения передаётся отдельно и
+   остаётся снаружи математики. */
+export function Formula({ tex, unit }) {
+  return (
+    <span className="formula">
+      <span dangerouslySetInnerHTML={{ __html: toMathML(tex) }} />
+      {unit ? ` ${unit}` : null}
+    </span>
+  )
+}
+
+/* Формула внутри сцены. MathML это HTML, а не SVG, поэтому его приходится
+   вставлять через foreignObject. Координаты и размер задаются в единицах
+   viewBox, так что формула масштабируется вместе со сценой. В отличие от
+   <text>, y это верх блока, а не базовая линия. */
+export function SvgFormula({ tex, unit, x = 0, y = 0, width, height, size = 19, fill = 'var(--ink)' }) {
+  return (
+    <foreignObject x={x} y={y} width={width} height={height}>
+      <div className="formula" style={{ fontSize: `${size}px`, lineHeight: 1.25, color: fill }}>
+        <span dangerouslySetInnerHTML={{ __html: toMathML(tex) }} />
+        {unit ? ` ${unit}` : null}
+      </div>
+    </foreignObject>
+  )
+}
 
 /* ---------- цикл анимации ---------- */
 

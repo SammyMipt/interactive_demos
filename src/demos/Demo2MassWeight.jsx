@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Stage, Panel, Readout, Slider, num } from '../ui.jsx'
+import { Stage, Panel, Readout, Slider, SvgFormula, num, texNum } from '../ui.jsx'
 
 /* Масса и вес. Масса не меняется никогда, вес зависит от планеты. */
 
@@ -124,9 +124,15 @@ export default function Demo2MassWeight() {
           </text>
         </g>
 
-        <text x="34" y="404" fontSize="13.5" fill="var(--ink)" fontFamily="var(--mono)">
-          P = m · g = {num(mass, 0)} · {num(planet.g, 1)} = {num(weight, 1)} Н
-        </text>
+        <SvgFormula
+          tex={`P = mg = ${texNum(mass, 0)} \\cdot ${texNum(planet.g, 1)} = ${texNum(weight, 1)}`}
+          unit="Н"
+          x={34}
+          y={392}
+          width={340}
+          height={26}
+          size={15}
+        />
       </Stage>
 
       <Panel>

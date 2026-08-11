@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react'
-import { Stage, Panel, Readout, Slider, useRaf, num, G } from '../ui.jsx'
+import { Stage, Panel, Readout, Slider, SvgFormula, useRaf, num, G } from '../ui.jsx'
 
 /* Скорость внизу горки не зависит от массы.
    Ползунок массы намеренно ни на что не влияет, и это подписано.
@@ -117,15 +117,11 @@ export default function Demo7SqrtGH() {
           <text fontSize="12" fill="var(--ink-soft)" letterSpacing="1">
             ФОРМУЛА
           </text>
-          <text y="30" fontSize="19" fontFamily="var(--mono)" fill="var(--ink)">
-            m g h = m v² / 2
-          </text>
-          <text y="60" fontSize="13" fill="var(--kinetic)" fontWeight="600">
+          <SvgFormula tex="mgh = \frac{mv^2}{2}" y={12} width={250} height={52} size={19} />
+          <text y="80" fontSize="13" fill="var(--kinetic)" fontWeight="600">
             масса сокращается с обеих сторон
           </text>
-          <text y="98" fontSize="20" fontFamily="var(--mono)" fill="var(--ink)">
-            v = √(2 g h)
-          </text>
+          <SvgFormula tex="v = \sqrt{2gh}" y={90} width={250} height={40} size={20} />
 
           <text y="148" fontSize="12" fill="var(--ink-soft)" letterSpacing="1">
             СКОРОСТЬ ВНИЗУ
