@@ -10,53 +10,85 @@ const E0 = M * G * H0 // 4 Дж
 const PX_PER_M = 140
 const Y_GROUND = 372
 
+const V0 = Math.sqrt(2 * G * H0) // скорость у земли при падении с H0
+const V_STOP = 0.25              // ниже этой скорости считаем, что мяч улёгся
+
+/* Полёт между ударами считается точной формулой, а не пошаговым
+   интегрированием: y = v0·t − g·t²/2 и vy = v0 − g·t. При этом
+   Ep + Ek = m·v0²/2 выполняется тождественно, поэтому полная энергия не
+   зависит ни от частоты кадров, ни от длины шага.
+
+   Раньше шаг считался полунеявной схемой Эйлера, а она для постоянной
+   тяжести теряет ровно g²·Δt²/2 на единицу массы каждый шаг. Потеря шла
+   мимо счётчика нагрева: «Полная» уползала с 4,00 тем сильнее, чем ниже
+   был фреймрейт, а в конце присваивание eInt = E0 возвращало её к 4,00
+   рывком. Здесь терять нечего: сумма сходится по построению.          */
+
 export default function Demo8Bounce() {
   const [loss, setLoss] = useState(0.3) // доля энергии, теряемая за удар
   const [playing, setPlaying] = useState(false)
-  const y = useRef(H0)      // высота, м
-  const vy = useRef(0)      // скорость, м/с (вниз отрицательная)
+  const t = useRef(V0 / G)  // время от последнего удара; старт — в верхней точке
+  const v0 = useRef(V0)     // скорость сразу после последнего удара
   const eInt = useRef(0)    // накопленная внутренняя энергия
   const heat = useRef(0)    // вспышка нагрева для подсветки
   const [, force] = useState(0)
 
   useRaf((dt) => {
-    const steps = 5
-    const sdt = dt / steps
-    for (let i = 0; i < steps; i++) {
-      vy.current -= G * sdt
-      y.current += vy.current * sdt
-      if (y.current <= 0) {
-        y.current = 0
-        const ekBefore = 0.5 * M * vy.current * vy.current
-        const ekAfter = ekBefore * (1 - loss)
-        eInt.current += ekBefore - ekAfter
-        heat.current = 1
-        vy.current = Math.sqrt((2 * ekAfter) / M)
-        if (vy.current < 0.25) {
-          vy.current = 0
-          eInt.current = E0
-          setPlaying(false)
-        }
+    let v = v0.current
+
+    /* Если мяч уже улёгся, время стоит вместе с ним. Без этого несколько
+       кадров всё же успевают пройти — setPlaying(false) обновляет состояние
+       не мгновенно, — и t продолжало бы расти при нулевой v0, разгоняя
+       мнимую скорость v0 − g·t и раздувая Ek на ровном месте. */
+    let tt = v > 0 ? t.current + dt : 0
+
+    // за один кадр может уместиться несколько ударов, когда мяч уже частит
+    for (let guard = 0; v > 0 && tt >= (2 * v) / G && guard < 200; guard++) {
+      tt -= (2 * v) / G
+      const ekBefore = 0.5 * M * v * v
+      const ekAfter = ekBefore * (1 - loss)
+      eInt.current += ekBefore - ekAfter
+      heat.current = 1
+      v = Math.sqrt((2 * ekAfter) / M)
+      if (v < V_STOP) {
+        // последние капли механической энергии тоже уходят в нагрев,
+        // поэтому в покое нагрев равен ровно E0 без всякой подгонки
+        eInt.current += 0.5 * M * v * v
+        v = 0
+        tt = 0
+        setPlaying(false)
       }
     }
+
+    t.current = tt
+    v0.current = v
     heat.current = Math.max(0, heat.current - dt * 2.2)
     force((n) => n + 1)
   }, playing)
 
-  const Ep = M * G * y.current
-  const Ek = 0.5 * M * vy.current * vy.current
+  /* Фаза полёта заведомо лежит внутри одного прыжка: от 0 до 2·v0/g.
+     При такой t высота неотрицательна, а |v0 − g·t| никогда не больше v0,
+     то есть Ek не может превысить m·v0²/2, а сумма — E0. Это делает
+     всплеск энергии невозможным арифметически, а не по договорённости о
+     том, в каком порядке сработают кадры и обновления состояния. */
+  const flight = v0.current > 0 ? Math.min(Math.max(t.current, 0), (2 * v0.current) / G) : 0
+  const height = Math.max(0, v0.current * flight - 0.5 * G * flight * flight)
+  const speed = v0.current - G * flight
+
+  const Ep = M * G * height
+  const Ek = 0.5 * M * speed * speed
   const total = Ep + Ek + eInt.current
 
   function reset() {
-    y.current = H0
-    vy.current = 0
+    t.current = V0 / G
+    v0.current = V0
     eInt.current = 0
     heat.current = 0
     setPlaying(false)
     force((n) => n + 1)
   }
 
-  const ballY = Y_GROUND - y.current * PX_PER_M - 15
+  const ballY = Y_GROUND - height * PX_PER_M - 15
 
   return (
     <>
@@ -119,7 +151,7 @@ export default function Demo8Bounce() {
             ВЫСОТА
           </text>
           <text y="27" fontSize="21" fontWeight="700" fontFamily="var(--mono)" fill="var(--potential)">
-            {num(y.current, 2)} м
+            {num(height, 2)} м
           </text>
         </g>
 

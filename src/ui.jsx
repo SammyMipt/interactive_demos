@@ -66,7 +66,11 @@ export function useRaf(cb, active = true) {
     let id
     let last = performance.now()
     const loop = (t) => {
-      const dt = Math.min((t - last) / 1000, 0.05)
+      // Отметка кадра приходит от браузера и изредка оказывается раньше
+      // момента, когда мы запомнили last, — тогда dt уходит в минус и
+      // анимация дёргается назад. Верхняя граница спасает от рывка после
+      // возврата на вкладку, нижняя — от такого хода времени вспять.
+      const dt = Math.max(0, Math.min((t - last) / 1000, 0.05))
       last = t
       ref.current(dt)
       id = requestAnimationFrame(loop)
