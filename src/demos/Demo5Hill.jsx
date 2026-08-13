@@ -15,6 +15,23 @@ const X_LEFT = 96
 const Y_BOT = 384
 const PX_PER_M = 168   // 1,25 м = 210 px
 
+/* Толчок рукой, px/с.
+
+   Вершина горки плоская: dh/dx = 0 при x = 0. Значит наверху скорость
+   строго нулевая, шаг интегрирования тоже нулевой, и шарик остаётся в
+   вершине навсегда — «Пустить шарик» не делал ничего. Это не ошибка
+   расчёта, а точка равновесия: положенный ровно на макушку шарик сам
+   действительно не поедет.
+
+   Поэтому пока собственная скорость меньше этого порога, ведём шарик с
+   постоянной скоростью — это и есть лёгкий толчок, которым его пускают
+   рукой. Порог мал: шарик сходит с вершины за треть секунды и первые
+   12 px из 430, дальше всё считает физика.
+
+   На энергию толчок не влияет: высота, скорость и столбики считаются от
+   положения шарика, поэтому наверху по-прежнему ровно 2,50 и 0,00.     */
+const NUDGE = 36
+
 // профиль горки: y(x) = H0 * (1 + cos(pi * x / L)) / 2
 const hAt = (xPx) => (H0 * (1 + Math.cos((Math.PI * xPx) / L))) / 2
 const xForH = (hm) => (L / Math.PI) * Math.acos(Math.max(-1, Math.min(1, (2 * hm) / H0 - 1)))
@@ -44,7 +61,8 @@ export default function Demo5Hill() {
     const vv = Math.sqrt(Math.max(0, 2 * G * (H0 - hh)))
     const dydx = ((-H0 * Math.PI * Math.sin((Math.PI * cur) / L)) / (2 * L)) * PX_PER_M
     const slope = Math.sqrt(1 + dydx * dydx)
-    let nx = cur + (dir.current * vv * PX_PER_M * dt) / slope
+    const speed = Math.max((vv * PX_PER_M) / slope, NUDGE)
+    let nx = cur + dir.current * speed * dt
     if (nx >= L) {
       nx = L
       setPlaying(false)
