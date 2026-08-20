@@ -7,6 +7,8 @@ import Demo5Hill from './demos/Demo5Hill.jsx'
 import Demo6Pendulum from './demos/Demo6Pendulum.jsx'
 import Demo7SqrtGH from './demos/Demo7SqrtGH.jsx'
 import Demo8Bounce from './demos/Demo8Bounce.jsx'
+import Demo9Molecules from './demos/Demo9Molecules.jsx'
+import Demo10Heating from './demos/Demo10Heating.jsx'
 
 /* Нумерация демонстраций сквозная: на занятии достаточно сказать
    «открой демо 5» и не искать нужную по названию. */
@@ -19,7 +21,9 @@ const DEMOS = [
   { n: 5, title: 'Шарик на горке', C: Demo5Hill, key: true },
   { n: 6, title: 'Маятник', C: Demo6Pendulum },
   { n: 7, title: 'Масса не влияет', C: Demo7SqrtGH },
-  { n: 8, title: 'Мяч и нагрев', C: Demo8Bounce, key: true }
+  { n: 8, title: 'Мяч и нагрев', C: Demo8Bounce, key: true },
+  { n: 9, title: 'Молекулы и температура', C: Demo9Molecules, key: true },
+  { n: 10, title: 'Что труднее нагреть', C: Demo10Heating }
 ]
 
 export default function App() {
