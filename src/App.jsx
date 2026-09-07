@@ -11,6 +11,8 @@ import Demo9Molecules from './demos/Demo9Molecules.jsx'
 import Demo10Heating from './demos/Demo10Heating.jsx'
 import Demo11HeatTransfer from './demos/Demo11HeatTransfer.jsx'
 import Demo12ThermalBalance from './demos/Demo12ThermalBalance.jsx'
+import Demo13HeatingCurve from './demos/Demo13HeatingCurve.jsx'
+import Demo14Evaporation from './demos/Demo14Evaporation.jsx'
 
 /* Нумерация демонстраций сквозная: на занятии достаточно сказать
    «открой демо 5» и не искать нужную по названию. */
@@ -27,7 +29,9 @@ const DEMOS = [
   { n: 9, title: 'Молекулы и температура', C: Demo9Molecules, key: true },
   { n: 10, title: 'Что труднее нагреть', C: Demo10Heating },
   { n: 11, title: 'Три способа передачи тепла', C: Demo11HeatTransfer },
-  { n: 12, title: 'Тепловой баланс', C: Demo12ThermalBalance, key: true }
+  { n: 12, title: 'Тепловой баланс', C: Demo12ThermalBalance, key: true },
+  { n: 13, title: 'Кривая нагревания', C: Demo13HeatingCurve, key: true },
+  { n: 14, title: 'Почему испарение охлаждает', C: Demo14Evaporation }
 ]
 
 export default function App() {
