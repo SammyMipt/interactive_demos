@@ -1,0 +1,53 @@
+# Публикация сайта с демонстрациями.
+#
+# Раньше этим занимался встроенный сборщик Pages («deploy from a branch»,
+# папка /docs). Он перестал работать, когда students/ стал приватным
+# субмодулем: свой чекаут он делает с подтягиванием субмодулей, доступа к
+# приватному репозиторию у него нет, и шаг Checkout падает целиком — вместе
+# с публикацией, хотя сайту содержимое students/ не нужно вовсе.
+#
+# Поэтому чекаут делаем сами и субмодули не трогаем. Публикуется ровно
+# папка docs, которую пишет npm run build в physics-kit/demos.
+
+name: Публикация сайта демонстраций
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'docs/**'
+      - '.github/workflows/pages.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Параллельные публикации не нужны: важна последняя. Но уже начатую не
+# отменяем, чтобы не оставить сайт в полуобновлённом состоянии.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # Ради этой строчки всё и затевалось: приватный субмодуль
+          # students/ здесь не нужен и не должен ронять публикацию.
+          submodules: false
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: docs
+
+      - id: deployment
+        uses: actions/deploy-pages@v4
